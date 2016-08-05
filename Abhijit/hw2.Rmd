@@ -1,0 +1,89 @@
+# Assignment 2 - Answer questions 1 - 8 in the space below. 
+
+For this assignment include all your R code in this R Markdown file to support your answer. Your code goes in the code "chunks" below. If you open this file in RStudio then you can run all the R code by clicking on the `Knit HTML` button. You can experiment with code in the R console and then paste your code into this document, or write it directly in this document and send it over to the console with the keyboard shortcut `command+enter` or `control+enter`.
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+```{r}
+summary(cars)
+```
+
+You can also embed plots, for example:
+
+```{r, echo=FALSE}
+plot(cars)
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+
+##Questions 1 to 4 are for a company called Restaurant Grades
+Restaurant Grades (RG) is a hypothetical restuarant review company such as Yelkp. Like Google it has organic and paid search results, and it makes money by selling advertisment slots. Becuase good restaurants will show up high on organic results there are doubts about whether it pays off, for a restaurant, to advertise on RG. To do this, RG has run an experiment with two treatment arms, corresponding to two types of advertising and targeting packages for restaurant owners, and a control group that has no advertising. In the data this is coded as the 'treatment' variable having values {0 for control, 1 for the first type of treament arm, 2 for the second type of treatment arm}
+
+1. Load the dataset `resturantGrades.csv` from moodle into a dataframe called `restGrade` (you may need to convert the XLSX file to CSV). Don't display the code to load the file in the knitted document. Provide summary statistics of the dataset and comment on anything of interest.
+
+
+
+```{r}
+
+```
+
+
+2. Given that there is a set of restuarants that have already bought ads, do you need to run an experiment? Or can you simply compare outcomes of restuarants that do and do not advertise on outcomes that the restaurants care about to determine whether advertising is effective?
+
+*Yes, there is a need to run an experiment because:*
+*1. TO run a successful experiment, the various test groups should be statistically         similar to each other.*
+*2. Restaurants who advertisement and who don't may not be statistically similar groups*
+*3. *
+
+3. Which outcome variable is most useful to consider? Are there other outcome variables that may be useful to measure?
+
+*<write your answer here>*
+
+4. Can you convince sceptical restuaranters that advertising works? Should RG stick to current ad design, or switch to the alternative? Use all the analytics you know to answer this question in a data-driven manner. 
+
+
+```{r}
+
+```
+
+##Questions 5 to 8 relate to the Global Mobile Apps dataset
+5. Load the dataset `GlobalMobileAppsExercise.csv` from moodle into a dataframe called `gmapps` . Don't display the code to load the file in the knitted document. Provide summary statistics of the dataset and comment on anything of interest.
+
+```{r}
+
+```
+
+6. Develop a regression model that links the rank of an app on the platform (this is a proxy for sales) to various factors that you think are important. Interpret your key results into insights. 
+
+```{r}
+
+```
+
+7. Is the price sensitivity of consumers in differnt regions of the world similar or different?
+
+```{r}
+
+```
+
+8. Can you refine 6. above to account for unobserved time invariant factors that may bias the results of 6.
+
+
+```{r}
+
+```
+
+##Bonus extra credit question (worth 2 percentage points over and above Assignmment 2 which is from Questions 1-8)
+
+Refer to Pages 61 - 64 of Introductory Statistics with Randomization and Simulation (1st Edition) by David M. Diez, Christopher D. Barr, and Cetinkaya-Rundel ?? (hereafter DBCR-Book)- visit https://www.openintro.org/stat/textbook.php?stat_book=isrs 
+
+In a group of 24 men and 24 women, 35 individuals, 21 of which were men, were promoted. The key question is whether there is gender discrimination? The authors suggest testing this using a simulation, the output of which is reflected in Figure 2.3 on Page 64. 
+
+Generate this simualtion (the logic is in the text) and see whether the observed 29% difference between the promotion rates of men and women is likely to be observed if there was no discrimination.
+
+
+```{r}
+
+```
+
