@@ -12,6 +12,7 @@ msp_weather <- fread('Datasets/msp_weather_apr15_apr16.csv', header = T)
 names(msp_delay_data) <- tolower(names(msp_delay_data))
 msp_delay_data$fl_date <- as.Date(msp_delay_data$fl_date)
 msp_weather$CDT <- as.Date(msp_weather$CDT)
+msp_delay_data <- as.data.frame(msp_delay_data)
 
 ```
 
@@ -20,6 +21,7 @@ Merge flight and weather data
 ```{r}
 msp_flight_weather <- merge(msp_delay_data,msp_weather, by.x = "fl_date",by.y = "CDT")
 names(msp_flight_weather) <- tolower(gsub(' ','_',names(msp_flight_weather)))
+msp_flight_weather <- unique(msp_flight_weather)
 ```
 
 
@@ -28,8 +30,6 @@ names(msp_flight_weather) <- tolower(gsub(' ','_',names(msp_flight_weather)))
 ```{r}
 delays <- msp_delay_data$dep_delay
 summary(delays)
-delays_normal <- delays[delays <= 212]
-plot(delays)
 
 ```
 
@@ -38,7 +38,7 @@ summary(delays)
 ```
 
 ```{r}
-quantile(delays, probs = seq(0,1,0.05))
+quantile(delays, probs = seq(0.9,1,0.0025))
 ```
 
 ```{r}
