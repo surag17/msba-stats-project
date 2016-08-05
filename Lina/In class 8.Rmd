@@ -1,0 +1,71 @@
+---
+title: "House Values"
+output: html_notebook
+---
+
+
+```{r}
+setwd("D:/UofM/Summer 2016/MSBA 6120/Week 8")
+library(readxl)
+values<-read_excel("Values.xlsx", na="NA", col_names = TRUE)
+attach(values)
+```
+
+```{r}
+linefit6<-lm(AppraisedValue~LotSize+HouseSize+Age+Rooms+Baths+Garage)
+summary(linefit6)
+
+```
+#P-value is significant, R squared is reasonable.
+##lm is the last one in the anova table. 
+##p-value of.23950, no interpretation.H0: beta 0 is equal to zero vs not.
+##p-value of .00146, the probabilty of getting beta of 292 given true beta is 0.(For each additional acre of land, the increase in appraisal value keeping all others constant.)(Over and above other variables.)
+##Interpretation of Miltiple R-Squared: 0.8472
+##Precentage of variation in appraised value that is explained by this model.
+##p-value of 2.57e-08
+##probability of getting this fitted model if there is actually no relationship for the predictors in the model.(A global test)
+##Remove the highest p-value if you need to take out one variable.
+
+```{r}
+cor(values[,3:8])
+
+```
+#Lots size and house size are inter correlated.Age and house size, garage and house size are all intercorrelated and thus needs attention.
+##beta catcehs the relationship between x and y by holding others fixed.
+## over 0.27 are the ones that have trouble.
+
+```{r}
+linefit3<-lm(AppraisedValue~LotSize+HouseSize+Age)
+summary(linefit3)
+```
+
+```{r}
+linefit3.stres <- rstandard(linefit3)
+plot(linefit3$fitted.values, linefit3.stres, pch = 16, main = "Standardized Re
+sidual Plot", xlab = "Fitted Sales (100s)", ylab = "Standardized Residuals")
+abline(0,0, lty=2, col="red")
+
+```
+```{r}
+pairs(~ linefit3.stres+LotSize + HouseSize + Age, main="Simple Scatt
+erplot Matrix")
+```
+
+```{r}
+h <- hist(linefit3.stres)
+x <- linefit3.stres
+xfit <- seq(min(x), max(x), length = 50)
+yfit <- dnorm(xfit, mean = mean(x), sd = sd(x))
+yfit <- yfit*diff(h$mids[1:2])*length(x)
+lines(xfit, yfit, col="blue")
+```
+```{r}
+qqnorm(linefit3.stres, main = "Normal Probability Plot", xlab = "Normal Scores
+", ylab = "Standardized Residuals")
+qqline(linefit3.stres, col = "red")
+
+```
+```{r}
+shapiro.test(linefit3.stres)
+```
+
