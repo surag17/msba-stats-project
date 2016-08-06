@@ -5,24 +5,40 @@ output: html_notebook
 
 ```{r}
 library(data.table)
+library(dplyr)
+library(plyr)
 
 msp_flight_data <- fread('Datasets/msp_apr15_apr16.csv', header = T)
-msp_delay_data <- msp_flight_data[which(msp_flight_data$DEP_DELAY > 0 & msp_flight_data$ORIGIN == "MSP"),]
-msp_weather <- fread('Datasets/msp_weather_apr15_apr16.csv', header = T)
-names(msp_delay_data) <- tolower(names(msp_delay_data))
-msp_delay_data$fl_date <- as.Date(msp_delay_data$fl_date)
-msp_weather$CDT <- as.Date(msp_weather$CDT)
+#msp_flight_data <- as.data.frame(msp_flight_data)
+names(msp_flight_data) <- tolower(names(msp_flight_data))
+msp_flight_data$fl_date <- as.Date(msp_flight_data$fl_date) ##Date conversion
+msp_flight_data$hour_of_day <- ifelse(nchar(msp_flight_data$dep_time) <= 2,0, as.numeric(substr(msp_flight_data$dep_time,1,nchar(msp_flight_data$dep_time)-2)))
+msp_flight_data <- msp_flight_data[,`:=`(num_flight_hour = sum(flights)),by=c('fl_date','hour_of_day')]
+msp_flight_data <- msp_flight_data[order(msp_flight_data$fl_date,msp_flight_data$hour_of_day),]
+#msp_flight_data <- ddply(msp_flight_data,.(fl_date,hour_of_day),transform,num_flights_hour = sum(flights))
+
+msp_delay_data <- msp_flight_data[which(msp_flight_data$dep_delay >= 30 & msp_flight_data$origin == "MSP"),]
+msp_weather <- read.csv('Datasets/msp_weather_apr15_apr16.csv', header = T)
+names(msp_weather) <- tolower(names(msp_weather))
+
+msp_weather$cdt <- as.Date(msp_weather$cdt)
 msp_delay_data <- as.data.frame(msp_delay_data)
+msp_delay_data$x <- NULL
 
 ```
 
 
 Merge flight and weather data
 ```{r}
-msp_flight_weather <- merge(msp_delay_data,msp_weather, by.x = "fl_date",by.y = "CDT")
+msp_flight_weather <- merge(msp_delay_data,msp_weather[,c(1,6,9,15,18:20,22)], by.x = "fl_date",by.y = "cdt")
 names(msp_flight_weather) <- tolower(gsub(' ','_',names(msp_flight_weather)))
 msp_flight_weather <- unique(msp_flight_weather)
 msp_flight_weather <- msp_flight_weather[which(msp_flight_weather$fl_date <= as.Date('2016-03-31')),]
+msp_flight_weather$prev_day <- msp_flight_weather$fl_date - 1
+msp_flight_weather <- merge(msp_flight_weather,msp_weather[,c(1,6,9,15,18:20,22)],by.x = "prev_day",by.y = "cdt", all.x = T)
+
+names(msp_flight_weather) <- gsub('\\.x','',names(msp_flight_weather))
+names(msp_flight_weather) <- gsub('\\.y','_prevday',names(msp_flight_weather))
 ```
 
 
@@ -64,6 +80,7 @@ msp_flight_weather$winter <- ifelse(msp_flight_weather$fl_date >= as.Date('2015-
 msp_flight_weather$precipitationin <- as.numeric(as.character(msp_flight_weather$precipitationin))
 ```
 
+##Adding holiday variables
 ```{r}
 holidays <- c('2014-01-01', '2014-01-20', '2014-02-17', '2014-05-26',
             '2014-07-04', '2014-09-01', '2014-10-13', '2013-11-11',
