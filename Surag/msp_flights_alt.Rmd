@@ -1,0 +1,120 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+```{r}
+library(reshape2)
+library(data.table)
+library(plyr)
+library(dplyr)
+
+
+msp_flight_data <- fread('Datasets/msp_apr12_apr16.csv', header = T)
+msp_weather <- read.csv('Datasets/msp_weather_apr12_apr16.csv', header = T)
+names(msp_weather) <- tolower(names(msp_weather))
+msp_weather$cdt <- as.Date(msp_weather$cdt)
+msp_flight_data <- msp_flight_data[which(msp_flight_data$ORIGIN == 'MSP' | msp_flight_data$DEST == 'MSP'),]
+```
+
+```{r}
+names(msp_flight_data) <- tolower(names(msp_flight_data))
+
+msp_flight_data$delay_gt30 <- ifelse(msp_flight_data$dep_delay >= 30,1,0)
+msp_flight_data$delay_gt10 <- ifelse(msp_flight_data$dep_delay >= 10,1,0)
+msp_flight_data$fl_date <- as.Date(msp_flight_data$fl_date)
+msp_flight_data$month <- months(msp_flight_data$fl_date)
+msp_flight_data <- msp_flight_data[msp_flight_data$fl_date <= as.Date('2016-03-31'),]
+msp_flight_data <- msp_flight_data[,`:=`(num_flight_day = sum(flights)),by='fl_date']
+msp_flight_data <- msp_flight_data[msp_flight_data$origin == 'MSP',]
+msp_flight_data <- msp_flight_data[order(msp_flight_data$fl_date),]
+```
+
+```{r}
+#msp_flight_data <- data.frame(msp_flight_data)
+msp_flight_aggregated <- ddply(msp_flight_data,
+                              .(fl_date),
+                              summarise,
+                              prop_flt_delays_gt30 = sum(delay_gt30,na.rm = T)/sum(flights,na.rm = T),
+                              prop_flt_delays_gt10 = sum(delay_gt10,na.rm = T)/sum(flights,na.rm = T),
+                              num_flights_handled = max(num_flight_day,na.rm = T))
+
+```
+
+```{r}
+msp_flight_weather <- merge(msp_flight_aggregated,msp_weather, by.x = "fl_date",by.y = "cdt")
+msp_flight_weather$day_of_week <- weekdays(msp_flight_weather$fl_date)
+msp_flight_weather$month <- tolower(months(msp_flight_weather$fl_date))
+msp_flight_weather$precipitationin <- ifelse(is.na(as.numeric(as.character(msp_flight_weather$precipitationin))),0,as.numeric(as.character(msp_flight_weather$precipitationin)))
+
+```
+
+```{r}
+msp_daily_events <- dcast(msp_flight_weather, fl_date ~ events, length)
+msp_day_of_week <- dcast(msp_flight_weather, fl_date ~ day_of_week, length)
+msp_month <- dcast(msp_flight_weather, fl_date ~ tolower(month), length)
+msp_flight_weather <- merge(msp_flight_weather,msp_daily_events[,-2], by = 'fl_date')
+msp_flight_weather <- merge(msp_flight_weather,msp_day_of_week,by = 'fl_date')
+msp_flight_weather <- merge(msp_flight_weather,msp_month, by = 'fl_date')
+
+names(msp_flight_weather) <- tolower(gsub('-','_',names(msp_flight_weather)))
+
+```
+
+
+```{r}
+baseModel <- lm(prop_flt_delays_gt10 ~ num_flights_handled
+                                  + min.visibilitymiles
+                                  + mean.visibilitymiles
+                                  + mean.wind.speedmph
+                                  + max.gust.speedmph
+                                  + as.numeric(as.character(precipitationin))
+                                  + factor(events)
+                                  + factor(day_of_week)
+                                  + factor(month)
+             , data = msp_flight_weather)
+
+baseModel_summary <- summary(baseModel)
+
+basemodel_Pvalues <- data.frame(p_values = baseModel_summary$coefficients[,4])
+basemodel_Pvalues <- cbind(row.names(basemodel_Pvalues),basemodel_Pvalues)
+basemodel_Pvalues <- data.frame(basemodel_Pvalues[order(-basemodel_Pvalues$p_values),])
+```
+
+```{r}
+tModel <- lm(prop_flt_delays_gt10 ~ num_flights_handled
+                                  #+ min.visibilitymiles
+                                  + mean.visibilitymiles
+                                  + mean.wind.speedmph
+                                  + max.gust.speedmph
+                                  + as.numeric(as.character(precipitationin))
+                                  #+ factor(events)
+                                  #+ factor(day_of_week)
+                                  #+ factor(month)
+                                  + fog_rain_hail_thunderstorm
+                                  + fog_rain_snow
+                                  + fog_rain_snow_thunderstorm
+                                  + fog_rain_thunderstorm
+                                  + fog_snow
+                                  + rain_snow
+                                  + rain_thunderstorm
+                                  + snow
+                                  + saturday
+                                  + sunday
+                                  + tuesday
+                                  + wednesday
+                                  #+ friday
+                                  + august
+                                  + december
+                                  + february
+                                  + january
+                                  + july
+                                  + june
+                                  + march
+                                  + may
+             , data = msp_flight_weather)
+
+summary(tModel)
+
+```
+
